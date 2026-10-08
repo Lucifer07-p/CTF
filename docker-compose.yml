@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./apps/api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/ctfcopilot.db
+      - WORKSPACE_ROOT=/app/workspace
+      - MAX_UPLOAD_BYTES=${MAX_UPLOAD_BYTES:-26214400}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    volumes:
+      - api_data:/app/data
+      - api_workspace:/app/workspace
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./apps/web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8000}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api_data:
+  api_workspace:
